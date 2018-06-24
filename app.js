@@ -1,22 +1,20 @@
 const express = require('express');
-const productsRoute = require('./api/routes/products');
-const ordersRoute = require('./api/routes/orders');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const keys = require('./config/keys');
+const productsRoute = require('./api/routes/products');
+const ordersRoute = require('./api/routes/orders');
+
 const app = express();
 
 mongoose
-	.connect(
-		'mongodb+srv://princegoziem:' +
-			process.env.MONGO_ATLAS_PW +
-			'@node-shop-okail.mongodb.net/test?retryWrites=true'
-	)
+	.connect(keys.mongoURI)
 	.then(() => {
-		console.log('Database Connected!');
+		console.log('Database Connected!!!');
 	})
 	.catch(() => {
-		console.log('Fail to connect to Database!');
+		console.log('Fail to connect the Database!');
 	});
 
 app.use(morgan('dev'));
