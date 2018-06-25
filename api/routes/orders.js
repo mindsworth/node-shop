@@ -5,7 +5,7 @@ const Order = require('../models/order');
 
 router.get('/', (req, res, next) => {
 	Order.find()
-		.select('productId quantity _id')
+		.select('product quantity _id')
 		.exec()
 		.then(result => {
 			res.status(200).json({
@@ -13,7 +13,7 @@ router.get('/', (req, res, next) => {
 				Orders: result.map(order => {
 					return {
 						_id: order._id,
-						productId: order.productId,
+						product: order.product,
 						quantity: order.quantity,
 						request: {
 							type: 'GET',
@@ -31,7 +31,7 @@ router.get('/', (req, res, next) => {
 router.post('/', (req, res, next) => {
 	const order = new Order({
 		_id: mongoose.Types.ObjectId(),
-		productId: req.body.productId,
+		product: req.body.productId,
 		quantity: req.body.quantity,
 	});
 
@@ -40,10 +40,14 @@ router.post('/', (req, res, next) => {
 		.then(result => {
 			res.status(200).json({
 				message: 'Order created.',
-				Order: {
+				CreatedOrder: {
 					_id: result._id,
-					productId: result.productId,
+					product: result.product,
 					quantity: result.quantity,
+				},
+				request: {
+					type: 'GET',
+					url: 'http://localhost:3000/orders/' + result._id,
 				},
 			});
 		})
@@ -56,7 +60,7 @@ router.get('/:orderId', (req, res, next) => {
 	const id = req.params.orderId;
 
 	Order.findById({ _id: id })
-		.select('productId quantity _id')
+		.select('product quantity _id')
 		.exec()
 		.then(result => {
 			res.status(200).json({
