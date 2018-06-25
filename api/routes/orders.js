@@ -2,10 +2,12 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Order = require('../models/order');
+const Product = require('../models/product');
 
 router.get('/', (req, res, next) => {
 	Order.find()
 		.select('product quantity _id')
+		.populate('product', 'name price _id')
 		.exec()
 		.then(result => {
 			res.status(200).json({
@@ -29,14 +31,22 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
-	const order = new Order({
-		_id: mongoose.Types.ObjectId(),
-		product: req.body.productId,
-		quantity: req.body.quantity,
-	});
+	Product.findById({ _id: req.body.productId })
+		.exec()
+		.then(product => {
+			if (!product) {
+				return res.status(404).json({
+					message: 'Product not found!!',
+				});
+			}
+			const order = new Order({
+				_id: mongoose.Types.ObjectId(),
+				product: req.body.productId,
+				quantity: req.body.quantity,
+			});
 
-	order
-		.save()
+			return order.save();
+		})
 		.then(result => {
 			res.status(200).json({
 				message: 'Order created.',
@@ -52,7 +62,10 @@ router.post('/', (req, res, next) => {
 			});
 		})
 		.catch(error => {
-			res.status(500).json({ error });
+			res.status(500).json({
+				message: 'Product not found!',
+				error,
+			});
 		});
 });
 
@@ -66,6 +79,10 @@ router.get('/:orderId', (req, res, next) => {
 			res.status(200).json({
 				message: 'Your order',
 				Order: result,
+				request: {
+					type: 'GET',
+					url: 'http://localhost:3000/orders/',
+				},
 			});
 		})
 		.catch(error => {
