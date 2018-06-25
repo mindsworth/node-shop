@@ -2,14 +2,16 @@ const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const keys = require('./config/keys');
+require('dotenv').config();
+
 const productsRoute = require('./api/routes/products');
 const ordersRoute = require('./api/routes/orders');
+const usersRoute = require('./api/routes/users');
 
 const app = express();
 
 mongoose
-	.connect(keys.mongoURI)
+	.connect(process.env.MONGO_URI)
 	.then(() => {
 		console.log('Database Connected!!!');
 	})
@@ -18,6 +20,9 @@ mongoose
 	});
 
 app.use(morgan('dev'));
+
+app.use('/uploads/', express.static('uploads/'));
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -33,6 +38,7 @@ app.use((req, res, next) => {
 
 app.use('/products', productsRoute);
 app.use('/orders', ordersRoute);
+app.use('/user', usersRoute);
 
 app.use((req, res, next) => {
 	const error = new Error('Request Not Found!');
